@@ -62,14 +62,15 @@ def croling(data, count_dict, processnum):
             search_box = driver.find_element('xpath', '//*[@id="open-search"]')
             search_box.click()
             search_box = driver.find_element('xpath', '//*[@id="search"]')
-            print('search박스 검색후')
+
             search_box.send_keys(key.lower())
             search_list = driver.find_element('xpath', '//*[@id="eac-container-search"]/ul')
-            print('style 추출전')
+       
             style=search_list.is_displayed()
             search_time=0
-            while(style==False and search_time<10) : 
+            while(style==False and search_time<3) : 
                 style=search_list.is_displayed()
+                search_time += 0.4
                 time.sleep(0.4)
             ingredients = driver.find_elements('xpath', '//*[@id="eac-container-search"]/ul/li')
             ingredientcount = len(ingredients)
@@ -78,10 +79,20 @@ def croling(data, count_dict, processnum):
             i_list=[idx, key]
             for ingredient in range(ingredientcount):
                 flag=0
-                print("index", ingredient)
                 t = driver.find_element('xpath', xpath+'[' + str(ingredient+1) + ']/div/a')
-                print(t)
-                if(t.text.lower()==key.lower() ):
+                search_url = t.get_attribute('href').split('/')
+                search_type = search_url[-2]
+                print(search_type)
+                k = key.lower().replace('-', '').replace(' ','').replace(',','').replace('(','').replace(')','')
+                t = t.text.replace('-', '').replace(' ','').replace(',','').lower()
+                try: t_idx1=t.index('(')
+                except: t_idx1=len(t)
+                try: t_idx2=t.index(')')+1
+                except: t_idx2=len(t)
+                print(t_idx1, t_idx2)
+                text = t[:t_idx1]+t[t_idx2:]
+                if(search_type=='ingredients'): print(text, k)
+                if(t==k):
                     flag=1
                     element = driver.find_element('xpath', xpath+'[' + str(ingredient+1) + ']/div')
                     url=driver.current_url
@@ -109,14 +120,14 @@ def croling(data, count_dict, processnum):
                     break
             if(flag==0):
                 count_dict['errcount'] += 1
-                i_list[1]='err'
-                data.append(i_list)
+                #i_list[1]='err'
+                #data.append(i_list)
                 #print("err:", count_dict['errcount'])
         except:
         #if(0): 
             count_dict['errcount'] += 1
-            i_list[1]='err'
-            data.append(i_list)
+            #i_list[1]='err'
+            #data.append(i_list)
             #print("err:", count_dict['errcount'])
         print('aswcount:', count_dict['awscount'],'errcount: ', count_dict['errcount'])
     

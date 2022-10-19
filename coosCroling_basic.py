@@ -40,15 +40,16 @@ pw.send_keys(Keys.RETURN)'''
 
 #전체데이터 저장
 
-def croling(data, count_dict):
+def croling(data, count_dict, processnum):
     
-    errcount=0
-    aswcount=0
+    count=0
     print('driver start')
     driver = webdriver.Chrome(executable_path='./chromedriver', chrome_options=option)
     while count_dict['count'] < len(keys):
-        idx= count_dict['count']
-        key = keys[count_dict['count']]
+        print(count_dict['count'])
+        idx= count*4+processnum
+        key = keys[idx]
+        count += 1
         count_dict['count'] += 1
         driver.get(url=URL)
         try: 
@@ -68,10 +69,14 @@ def croling(data, count_dict):
                 if(t.text.lower()==key.lower() or k.text.lower()==key.lower()):
                     flag=1
                     element = driver.find_element('xpath', xpath+'[' + str(ingredient+1) + ']/div')
+                    url=driver.current_url
                     element.click()
                     print("click")
                     #주소가 바뀌었는지 확인하는 코드 필요
-                    time.sleep(3)
+                    while(url==driver.current_url): 
+                        time.sleep(0.5)
+                    time.sleep(0.1)
+                    url=driver.current_url
                     krName = driver.find_element('xpath', '//*[@id="__next"]/div/div/main/div/div/div/div[1]/div[1]/div/div/div[2]/div[1]').text
                     enName = driver.find_element('xpath', '//*[@id="__next"]/div/div/main/div/div/div/div[1]/div[1]/div/div/div[2]/div[2]').text
                     name = {'kr': krName, 'en': enName}
@@ -112,8 +117,8 @@ if __name__ == '__main__':
     process = []
 
     # while count<len(keys):
-    for i in range(4):
-        p = multiprocessing.Process(target = croling, args = (data, count_dict))
+    for i in range(8):
+        p = multiprocessing.Process(target = croling, args = (data, count_dict, i))
         process.append(p)
         p.start()
 
